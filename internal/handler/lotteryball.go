@@ -13,6 +13,7 @@ import (
 type LotteryBallHandler interface {
 	GetLotteryBallById(ctx *gin.Context)
 	UpdateLotteryBall(ctx *gin.Context)
+	Ping(ctx *gin.Context)
 }
 
 type lotteryBallHandler struct {
@@ -47,4 +48,8 @@ func (h *lotteryBallHandler) GetLotteryBallById(ctx *gin.Context) {
 
 func (h *lotteryBallHandler) UpdateLotteryBall(ctx *gin.Context) {
 	resp.HandleSuccess(ctx, nil)
+}
+
+func (h *lotteryBallHandler) Ping(ctx *gin.Context) {
+	resp.HandleSuccess(ctx, map[string]string{"message": "pong"})
 }

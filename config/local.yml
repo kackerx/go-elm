@@ -1,6 +1,6 @@
 env: local
 http:
-  port: 8080
+  port: 8000
 security:
   api_sign:
     app_key: 123456
@@ -9,7 +9,7 @@ security:
     key: QQYnRFerJTSEcrfB89fw8prOaObmrch8
 data:
   mysql:
-    user: root:wasd4044516520@tcp(127.0.0.1:3306)/go_elm?charset=utf8mb4&parseTime=True&loc=Local
+    user: root:#Wasd4044@tcp(127.0.0.1:3306)/go_elm?charset=utf8mb4&parseTime=True&loc=Local
   redis:
     addr: 127.0.0.1:6379
     password: ""

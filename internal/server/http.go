@@ -13,6 +13,7 @@ func NewServerHTTP(
 	logger *log.Logger,
 	jwt *middleware.JWT,
 	userHandler handler.UserHandler,
+	lotteryBallHandler handler.LotteryBallHandler,
 ) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
@@ -48,6 +49,12 @@ func NewServerHTTP(
 	strictAuthRouter := r.Group("/").Use(middleware.StrictAuth(jwt, logger))
 	{
 		strictAuthRouter.PUT("/user", userHandler.UpdateProfile)
+	}
+
+	// vue-test api
+	vueTestRouter := r.Group("/api")
+	{
+		vueTestRouter.GET("/", lotteryBallHandler.Ping)
 	}
 
 	return r

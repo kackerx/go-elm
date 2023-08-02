@@ -14,15 +14,15 @@ import (
 )
 
 type Repository struct {
-	db     *gorm.DB
-	rdb    *redis.Client
+	db *gorm.DB
+	// rdb    *redis.Client
 	logger *log.Logger
 }
 
-func NewRepository(db *gorm.DB, rdb *redis.Client, logger *log.Logger) *Repository {
+func NewRepository(db *gorm.DB, logger *log.Logger) *Repository {
 	return &Repository{
-		db:     db,
-		rdb:    rdb,
+		db: db,
+		// rdb:    rdb,
 		logger: logger,
 	}
 }
