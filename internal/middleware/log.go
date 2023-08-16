@@ -2,16 +2,18 @@ package middleware
 
 import (
 	"bytes"
-	"elm/pkg/helper/md5"
-	"elm/pkg/helper/uuid"
-	"elm/pkg/log"
 	"encoding/json"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 	"io"
 	"strconv"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
+
+	"elm/pkg/helper/md5"
+	"elm/pkg/helper/uuid"
+	"elm/pkg/log"
 )
 
 func RequestLogMiddleware(logger *log.Logger) gin.HandlerFunc {

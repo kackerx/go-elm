@@ -13,7 +13,8 @@ func NewServerHTTP(
 	logger *log.Logger,
 	jwt *middleware.JWT,
 	userHandler handler.UserHandler,
-	lotteryBallHandler handler.LotteryBallHandler,
+	homeHandler handler.HomeHandler,
+	articleHandler handler.ArticleHandler,
 ) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
@@ -39,6 +40,20 @@ func NewServerHTTP(
 		noAuthRouter.POST("/register", userHandler.Register)
 		noAuthRouter.POST("/login", userHandler.Login)
 	}
+
+	// Article rounter
+	articleRouter := r.Group("/api")
+	{
+		articleRouter.GET("/articles/:id", articleHandler.GetArticleById)
+		articleRouter.POST("/articles", articleHandler.GetArticleList)
+	}
+
+	// home_page rounter
+	homePageRouter := r.Group("/api")
+	{
+		homePageRouter.GET("/home_page", homeHandler.GetHomePage)
+	}
+
 	// Non-strict permission routing group
 	noStrictAuthRouter := r.Group("/").Use(middleware.NoStrictAuth(jwt, logger))
 	{
@@ -49,12 +64,6 @@ func NewServerHTTP(
 	strictAuthRouter := r.Group("/").Use(middleware.StrictAuth(jwt, logger))
 	{
 		strictAuthRouter.PUT("/user", userHandler.UpdateProfile)
-	}
-
-	// vue-test api
-	vueTestRouter := r.Group("/api")
-	{
-		vueTestRouter.GET("/", lotteryBallHandler.Ping)
 	}
 
 	return r

@@ -9,29 +9,32 @@ import (
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 
 	"elm/pkg/log"
 )
 
 type Repository struct {
-	db *gorm.DB
-	// rdb    *redis.Client
+	db     *gorm.DB
+	rdb    *redis.Client
 	logger *log.Logger
 }
 
 func NewRepository(db *gorm.DB, logger *log.Logger) *Repository {
 	return &Repository{
-		db: db,
-		// rdb:    rdb,
+		db:     db,
 		logger: logger,
 	}
 }
 
 func NewDB(conf *viper.Viper) *gorm.DB {
-	db, err := gorm.Open(mysql.Open(conf.GetString("data.mysql.user")), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(conf.GetString("data.mysql.user")), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 	if err != nil {
 		panic(err)
 	}
+
 	return db
 }
 func NewRedis(conf *viper.Viper) *redis.Client {

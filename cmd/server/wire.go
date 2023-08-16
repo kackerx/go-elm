@@ -26,21 +26,24 @@ var JwtSet = wire.NewSet(middleware.NewJwt)
 var HandlerSet = wire.NewSet(
 	handler.NewHandler,
 	handler.NewUserHandler,
-	handler.NewLotteryBallHandler,
+	handler.NewHomeHandler,
+	handler.NewArticleHandler,
 )
 
 var ServiceSet = wire.NewSet(
 	service.NewService,
 	service.NewUserService,
-	service.NewLotteryBallService,
+	service.NewHomeService,
+	service.NewArticleService,
 )
 
 var RepositorySet = wire.NewSet(
 	repository.NewDB,
-	// repository.NewRedis,
+	repository.NewRedis,
 	repository.NewRepository,
 	repository.NewUserRepository,
-	repository.NewLotteryBallRepository,
+	repository.NewHomeRepository,
+	repository.NewArticleRepository,
 )
 
 func newApp(*viper.Viper, *log.Logger) (*gin.Engine, func(), error) {
