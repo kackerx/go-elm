@@ -18,4 +18,13 @@ type Articles struct {
 	DiyData      string `gorm:"not null" db:"diy_data" json:"diy_data"`
 	DiyShengxiao string `gorm:"not null" db:"diy_shengxiao" json:"diy_shengxiao"`
 	DiyTema      string `gorm:"not null" db:"diy_tema" json:"diy_tema"`
+	// CreatedAt    time.Time `gorm:"not null" db:"created_at" json:"created_at"`
+	PublishTime int64  `gorm:"not null" db:"publish_time" json:"publish_time"`
+	ImgUrl      string `gorm:"not null" db:"img_url" json:"img_url"`
+	Cid         string `gorm:"not null" db:"cid" json:"cid"`
 }
+
+const (
+	ArticleTypeShengXiao = "shengxiao"
+	AritcleTypeNumber    = "number"
+)

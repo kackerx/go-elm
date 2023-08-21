@@ -9,6 +9,7 @@ import (
 
 	"elm/internal/model"
 	"elm/internal/repository"
+	"elm/vars"
 )
 
 type RegisterRequest struct {
@@ -89,7 +90,7 @@ func (s *userService) Login(ctx context.Context, req *LoginRequest) (string, err
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
 	if err != nil {
-		return "", errors.Wrap(err, "failed to hash password")
+		return "", vars.ErrorMap[vars.ErrUserInvalidPassword]
 	}
 	token, err := s.jwt.GenToken(user.UserId, time.Now().Add(time.Hour*24*90))
 	if err != nil {

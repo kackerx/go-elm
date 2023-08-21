@@ -10,21 +10,28 @@ import (
 type ArticleRepository interface {
 	FirstById(id string) (*model.ArticleContent, error)
 
-	List(offset, pageSize int) ([]*model.Articles, error)
+	List(offset, pageSize int, cate, year string) ([]*model.Articles, error)
 
 	Create(article *model.Articles) error
+
+	CreateContent(article *model.ArticleContent) error
 }
 
 type articleRepository struct {
 	*Repository
 }
 
-func (r *articleRepository) List(offset, pageSize int) (res []*model.Articles, err error) {
-	if err = r.db.Offset(offset).Limit(pageSize).Find(&res).Order("diy_date desc").Error; err != nil {
+func (r *articleRepository) List(offset, pageSize int, cate, year string) (res []*model.Articles, err error) {
+	if err = r.db.
+		Where("cid = ?", cate).
+		Where("YEAR(STR_TO_DATE(diy_date, '%Y/%m/%d')) = ?", year).
+		Offset(offset).Limit(pageSize).
+		Order("diy_date desc").
+		Find(&res).
+		Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
-
 		return nil, errors.Wrap(err, "查找搅珠记录列表失败")
 	}
 
@@ -34,6 +41,14 @@ func (r *articleRepository) List(offset, pageSize int) (res []*model.Articles, e
 func (r *articleRepository) Create(article *model.Articles) error {
 	if err := r.db.Create(article).Error; err != nil {
 		return errors.Wrap(err, "创建文章失败")
+	}
+
+	return nil
+}
+
+func (r *articleRepository) CreateContent(article *model.ArticleContent) error {
+	if err := r.db.Create(article).Error; err != nil {
+		return errors.Wrap(err, "创建文章内容失败")
 	}
 
 	return nil

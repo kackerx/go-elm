@@ -5,9 +5,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
+	"gorm.io/gorm"
 
 	"elm/internal/service"
 	"elm/pkg/helper/resp"
+	"elm/vars"
 )
 
 type UserHandler interface {
@@ -53,7 +55,11 @@ func (h *userHandler) Login(ctx *gin.Context) {
 
 	token, err := h.userService.Login(ctx, &req)
 	if err != nil {
-		resp.HandleError(ctx, http.StatusUnauthorized, 1, err.Error(), nil)
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			resp.HandleError(ctx, http.StatusOK, vars.ErrUserNotFound, vars.ErrorMap[vars.ErrUserNotFound].Error(), nil)
+			return
+		}
+		resp.HandleError(ctx, http.StatusOK, vars.ErrUserInvalidPassword, vars.ErrorMap[vars.ErrUserInvalidPassword].Error(), nil)
 		return
 	}
 

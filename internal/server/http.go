@@ -18,6 +18,7 @@ func NewServerHTTP(
 ) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
+	r.Static("/uploads", "./uploads")
 
 	r.Use(
 		middleware.CORSMiddleware(),
@@ -45,7 +46,10 @@ func NewServerHTTP(
 	articleRouter := r.Group("/api")
 	{
 		articleRouter.GET("/articles/:id", articleHandler.GetArticleById)
-		articleRouter.POST("/articles", articleHandler.GetArticleList)
+		articleRouter.GET("/articles", articleHandler.GetArticleList)
+		articleRouter.POST("/articles", articleHandler.AddArticle)
+		articleRouter.POST("/article_content", articleHandler.AddArticleContent)
+		articleRouter.POST("/image/upload", articleHandler.ImageUpload)
 	}
 
 	// home_page rounter

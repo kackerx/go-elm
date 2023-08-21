@@ -10,19 +10,27 @@ import (
 )
 
 type AddArticleRequest struct {
-	Title     string `json:"title" binding:"required"`
-	Qihao     string `json:"qihao" binding:"required"`
-	Data      string `json:"data" binding:"required"`
-	Shengxiao string `json:"shengxiao" binding:"required"`
-	Tema      string `json:"tema" binding:"required"`
+	Qihao        string `json:"qihao" binding:"required"`
+	DiyData      string `json:"diy_data" binding:"required"`
+	DiyShengxiao string `json:"diy_shengxiao" binding:"required"`
+	DiyTema      string `json:"diy_tema" binding:"required"`
+}
+
+type AddArticleContentRequest struct {
+	Id      string `json:"id" binding:"required"`
+	Content string `json:"content" binding:"required"`
 }
 
 type ArticleService interface {
 	GetArticleById(string) (*model.ArticleContent, error)
 
-	GetArticleList(vars.PageParams) ([]*model.Articles, error)
+	GetArticleList(vars.PageParams, string, string) ([]*model.Articles, error)
 
 	AddArticle(request *AddArticleRequest) error
+
+	AddArticleContent(request *AddArticleContentRequest) error
+
+	SaveArticleImg(imgName, title string) error
 }
 
 type articleService struct {
@@ -31,20 +39,30 @@ type articleService struct {
 }
 
 func (s *articleService) AddArticle(req *AddArticleRequest) error {
-	return s.articleRepository.Create(&model.Articles{
-		Title:        req.Title,
-		DiyDate:      time.Now().Format(`2006/01/02`),
+	m := &model.Articles{
+		Title:        time.Now().Format("2006/1/02") + "---" + req.Qihao + "开奖结果",
+		DiyDate:      time.Now().Format("2006/01/02"),
 		DiyQihao:     req.Qihao,
-		DiyData:      req.Data,
-		DiyShengxiao: req.Shengxiao,
-		DiyTema:      req.Tema,
+		DiyData:      req.DiyData,
+		DiyShengxiao: req.DiyShengxiao,
+		DiyTema:      req.DiyTema,
+		PublishTime:  time.Now().Unix(),
+	}
+
+	return s.articleRepository.Create(m)
+}
+
+func (s *articleService) AddArticleContent(req *AddArticleContentRequest) error {
+	return s.articleRepository.CreateContent(&model.ArticleContent{
+		Id:      req.Id,
+		Content: req.Content,
 	})
 }
 
-func (s *articleService) GetArticleList(params vars.PageParams) ([]*model.Articles, error) {
+func (s *articleService) GetArticleList(params vars.PageParams, cate, year string) ([]*model.Articles, error) {
 	offset := utils.GetPageOffset(params.PageSize, params.PageNum)
 
-	return s.articleRepository.List(offset, params.PageSize)
+	return s.articleRepository.List(offset, params.PageSize, cate, year)
 }
 
 func NewArticleService(service *Service, articleRepository repository.ArticleRepository) ArticleService {
@@ -56,4 +74,15 @@ func NewArticleService(service *Service, articleRepository repository.ArticleRep
 
 func (s *articleService) GetArticleById(id string) (*model.ArticleContent, error) {
 	return s.articleRepository.FirstById(id)
+}
+
+func (s *articleService) SaveArticleImg(imgName, title string) error {
+	return s.articleRepository.Create(&model.Articles{
+		Title:       title,
+		PublishTime: time.Now().Unix(),
+		ImgUrl:      imgName,
+		Cid:         "1",
+		DiyQihao:    "0",
+		DiyTema:     "0",
+	})
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	"gorm.io/gorm"
 
 	"elm/internal/model"
 )
@@ -53,9 +52,6 @@ func (r *userRepository) GetByID(ctx context.Context, userId string) (*model.Use
 func (r *userRepository) GetByUsername(ctx context.Context, username string) (*model.User, error) {
 	var user model.User
 	if err := r.db.Where("username = ?", username).First(&user).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
 		return nil, errors.Wrap(err, "failed to get user by username")
 	}
 
