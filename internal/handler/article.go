@@ -78,12 +78,18 @@ func (h *articleHandler) GetArticleList(ctx *gin.Context) {
 		return
 	}
 
-	articles, err := h.articleService.GetArticleList(params, ctx.Query("cate"), ctx.Query("year"))
+	articles, total, year, err := h.articleService.GetArticleList(params, ctx.Query("cate"), ctx.Query("year"))
 	if err != nil {
 		resp.HandleError(ctx, http.StatusOK, 1, "获取记录失败", nil)
 		return
 	}
-	resp.HandleSuccess(ctx, articles)
+
+	data := map[string]any{}
+	data["total"] = total
+	data["list"] = articles
+	data["year"] = year
+
+	resp.HandleSuccess(ctx, data)
 }
 
 func (h *articleHandler) GetArticleById(ctx *gin.Context) {

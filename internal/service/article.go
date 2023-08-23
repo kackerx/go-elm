@@ -24,7 +24,7 @@ type AddArticleContentRequest struct {
 type ArticleService interface {
 	GetArticleById(string) (*model.ArticleContent, error)
 
-	GetArticleList(vars.PageParams, string, string) ([]*model.Articles, error)
+	GetArticleList(vars.PageParams, string, string) ([]*model.Articles, int64, string, error)
 
 	AddArticle(request *AddArticleRequest) error
 
@@ -41,7 +41,7 @@ type articleService struct {
 func (s *articleService) AddArticle(req *AddArticleRequest) error {
 	m := &model.Articles{
 		Title:        time.Now().Format("2006/1/02") + "---" + req.Qihao + "开奖结果",
-		DiyDate:      time.Now().Format("2006/01/02"),
+		DiyDate:      time.Now().Format("2006/1/02"),
 		DiyQihao:     req.Qihao,
 		DiyData:      req.DiyData,
 		DiyShengxiao: req.DiyShengxiao,
@@ -59,7 +59,7 @@ func (s *articleService) AddArticleContent(req *AddArticleContentRequest) error 
 	})
 }
 
-func (s *articleService) GetArticleList(params vars.PageParams, cate, year string) ([]*model.Articles, error) {
+func (s *articleService) GetArticleList(params vars.PageParams, cate, year string) ([]*model.Articles, int64, string, error) {
 	offset := utils.GetPageOffset(params.PageSize, params.PageNum)
 
 	return s.articleRepository.List(offset, params.PageSize, cate, year)
