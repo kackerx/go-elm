@@ -16,12 +16,12 @@ const (
 	ErrUserNotFound        = -1000
 	ErrUserExist           = -1001
 	ErrUserInvalidPassword = -1002
+	ErrTokenInvalid        = -1003
 
 	// 业务错误
 	ErrImgUploadFail = -110100
 
 	// 数据库相关
-
 )
 
 var ErrorMap = map[int]CodeError{
@@ -29,4 +29,5 @@ var ErrorMap = map[int]CodeError{
 	ErrUserNotFound:        {ErrUserNotFound, "用户不存在"},
 	ErrUserInvalidPassword: {ErrUserInvalidPassword, "密码错误"},
 	ErrImgUploadFail:       {ErrImgUploadFail, "图片上传失败"},
+	ErrTokenInvalid:        {ErrTokenInvalid, "token无效"},
 }

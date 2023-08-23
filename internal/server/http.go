@@ -28,9 +28,8 @@ func NewServerHTTP(
 	)
 
 	// No route group has permission
-	noAuthRouter := r.Group("/")
+	noAuthRouter := r.Group("/api")
 	{
-
 		noAuthRouter.GET("/", func(ctx *gin.Context) {
 			logger.WithContext(ctx).Info("hello")
 			resp.HandleSuccess(ctx, map[string]interface{}{
@@ -40,6 +39,7 @@ func NewServerHTTP(
 
 		noAuthRouter.POST("/register", userHandler.Register)
 		noAuthRouter.POST("/login", userHandler.Login)
+		noAuthRouter.POST("/check_login", userHandler.CheckLogin)
 	}
 
 	// Article rounter

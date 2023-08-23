@@ -14,9 +14,14 @@ import (
 
 type UserHandler interface {
 	Register(ctx *gin.Context)
+
 	Login(ctx *gin.Context)
+
 	GetProfile(ctx *gin.Context)
+
 	UpdateProfile(ctx *gin.Context)
+
+	CheckLogin(ctx *gin.Context)
 }
 
 type userHandler struct {
@@ -95,6 +100,16 @@ func (h *userHandler) UpdateProfile(ctx *gin.Context) {
 
 	if err := h.userService.UpdateProfile(ctx, userId, &req); err != nil {
 		resp.HandleError(ctx, http.StatusBadRequest, 1, err.Error(), nil)
+		return
+	}
+
+	resp.HandleSuccess(ctx, nil)
+}
+
+func (h *userHandler) CheckLogin(ctx *gin.Context) {
+	err := h.userService.CheckLogin(ctx, ctx.PostForm("token"))
+	if err != nil {
+		resp.HandleError(ctx, http.StatusUnauthorized, vars.ErrTokenInvalid, err.Error(), nil)
 		return
 	}
 

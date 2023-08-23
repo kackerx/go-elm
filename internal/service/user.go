@@ -39,6 +39,7 @@ type UserService interface {
 	Login(ctx context.Context, req *LoginRequest) (string, error)
 	GetProfile(ctx context.Context, userId string) (*model.User, error)
 	UpdateProfile(ctx context.Context, userId string, req *UpdateProfileRequest) error
+	CheckLogin(ctx context.Context, token string) error
 }
 
 type userService struct {
@@ -70,7 +71,7 @@ func (s *userService) Register(ctx context.Context, req *RegisterRequest) error 
 	}
 	// Create a user
 	user := &model.User{
-		UserId:   userId,
+		Uid:      userId,
 		Username: req.Username,
 		Password: string(hashedPassword),
 		Email:    req.Email,
@@ -92,7 +93,7 @@ func (s *userService) Login(ctx context.Context, req *LoginRequest) (string, err
 	if err != nil {
 		return "", vars.ErrorMap[vars.ErrUserInvalidPassword]
 	}
-	token, err := s.jwt.GenToken(user.UserId, time.Now().Add(time.Hour*24*90))
+	token, err := s.jwt.GenToken(user.Uid, time.Now().Add(time.Hour*24*90))
 	if err != nil {
 		return "", errors.Wrap(err, "failed to generate JWT token")
 	}
@@ -120,6 +121,15 @@ func (s *userService) UpdateProfile(ctx context.Context, userId string, req *Upd
 
 	if err = s.userRepo.Update(ctx, user); err != nil {
 		return errors.Wrap(err, "failed to update user")
+	}
+
+	return nil
+}
+
+func (s *userService) CheckLogin(ctx context.Context, token string) error {
+	_, err := s.jwt.ParseToken(token)
+	if err != nil {
+		return errors.Wrap(err, "invalid token")
 	}
 
 	return nil

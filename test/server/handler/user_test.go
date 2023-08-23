@@ -2,24 +2,27 @@ package handler
 
 import (
 	"bytes"
-	"elm/internal/handler"
-	"elm/mocks/service"
 	"encoding/json"
 	"fmt"
-
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
+
+	"gopkg.in/yaml.v3"
+
+	"elm/internal/handler"
+	"elm/mocks/service"
+
+	"github.com/gin-gonic/gin"
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 
 	"elm/internal/middleware"
 	"elm/internal/model"
 	"elm/internal/service"
 	"elm/pkg/config"
 	"elm/pkg/log"
-	"github.com/gin-gonic/gin"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -50,7 +53,7 @@ func TestMain(m *testing.M) {
 		middleware.CORSMiddleware(),
 		middleware.ResponseLogMiddleware(logger),
 		middleware.RequestLogMiddleware(logger),
-		//middleware.SignMiddleware(log),
+		// middleware.SignMiddleware(log),
 	)
 
 	code := m.Run()
@@ -166,4 +169,30 @@ func performRequest(r http.Handler, method, path string, body *bytes.Buffer) *ht
 	resp := httptest.NewRecorder()
 	r.ServeHTTP(resp, req)
 	return resp
+}
+
+func TestFoo(t *testing.T) {
+	confData := make(map[string]interface{})
+
+	raw := `
+kafka:
+  brokers: [localhost:9092]
+  max_retries: 5
+  retry_backoff: 250
+  consumer_workers: 5
+  topic_prefix: fbi_testing_
+`
+
+	err := yaml.Unmarshal([]byte(raw), &confData)
+	if err != nil {
+		panic(err)
+	}
+
+	jsonStr, err := json.Marshal(confData)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(string(jsonStr))
+
 }
