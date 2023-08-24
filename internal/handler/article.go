@@ -121,6 +121,19 @@ func (h *articleHandler) UpdateArticle(ctx *gin.Context) {
 }
 
 func (h *articleHandler) UpdateArticleContent(ctx *gin.Context) {
+	req := new(service.AddArticleContentRequest)
+
+	if err := ctx.ShouldBindJSON(req); err != nil {
+		resp.HandleError(ctx, http.StatusBadRequest, 1, err.Error(), nil)
+		return
+	}
+
+	err := h.articleService.UpdateArticleContent(ctx, req)
+	if err != nil {
+		resp.HandleError(ctx, http.StatusBadRequest, 1, err.Error(), nil)
+		return
+	}
+
 	resp.HandleSuccess(ctx, nil)
 }
 

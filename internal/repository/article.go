@@ -1,7 +1,10 @@
 package repository
 
 import (
+	"context"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
@@ -17,6 +20,8 @@ type ArticleRepository interface {
 	Create(article *model.Articles) error
 
 	CreateContent(article *model.ArticleContent) error
+
+	Update(ctx context.Context, content *model.ArticleContent) error
 }
 
 type articleRepository struct {
@@ -39,6 +44,12 @@ func (r *articleRepository) List(offset, pageSize int, cate, year string) (res [
 		cate = "3"
 	case "2022":
 		cate = "9"
+	case "2023":
+		cate = "10"
+	case "2024":
+		cate = "11"
+	case "2025":
+		cate = "12"
 	default:
 		cate = "2"
 	}
@@ -71,6 +82,18 @@ func (r *articleRepository) List(offset, pageSize int, cate, year string) (res [
 }
 
 func (r *articleRepository) Create(article *model.Articles) error {
+	var cid string
+	switch strconv.Itoa(time.Now().Year()) {
+	case "2023":
+		cid = "10"
+	case "2024":
+		cid = "11"
+	case "2025":
+		cid = "12"
+	default:
+		cid = "2"
+	}
+	article.Cid = cid
 	if err := r.db.Create(article).Error; err != nil {
 		return errors.Wrap(err, "创建文章失败")
 	}
@@ -79,7 +102,7 @@ func (r *articleRepository) Create(article *model.Articles) error {
 }
 
 func (r *articleRepository) CreateContent(article *model.ArticleContent) error {
-	if err := r.db.Create(article).Error; err != nil {
+	if err := r.db.Save(article).Error; err != nil {
 		return errors.Wrap(err, "创建文章内容失败")
 	}
 
@@ -103,4 +126,12 @@ func (r *articleRepository) FirstById(id string) (*model.ArticleContent, error) 
 	}
 
 	return &article, nil
+}
+
+func (r *articleRepository) Update(ctx context.Context, content *model.ArticleContent) error {
+	if err := r.db.Model(content).Where("id = ?", content.Id).Update("content", content.Content).Error; err != nil {
+		return errors.Wrap(err, "更新文章内容失败")
+	}
+
+	return nil
 }

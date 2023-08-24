@@ -53,6 +53,7 @@ func NewServerHTTP(
 		articleAuthRouter.POST("/articles", articleHandler.AddArticle)
 		articleAuthRouter.POST("/article_content", articleHandler.AddArticleContent)
 		articleAuthRouter.POST("/image/upload", articleHandler.ImageUpload)
+		articleAuthRouter.POST("/article_content/update", articleHandler.UpdateArticleContent)
 	}
 
 	// home_page rounter

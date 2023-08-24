@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"time"
 
 	"elm/internal/model"
@@ -31,6 +32,8 @@ type ArticleService interface {
 	AddArticleContent(request *AddArticleContentRequest) error
 
 	SaveArticleImg(imgName, title string) error
+
+	UpdateArticleContent(ctx context.Context, request *AddArticleContentRequest) error
 }
 
 type articleService struct {
@@ -84,5 +87,12 @@ func (s *articleService) SaveArticleImg(imgName, title string) error {
 		Cid:         "1",
 		DiyQihao:    "0",
 		DiyTema:     "0",
+	})
+}
+
+func (s *articleService) UpdateArticleContent(ctx context.Context, request *AddArticleContentRequest) error {
+	return s.articleRepository.Update(ctx, &model.ArticleContent{
+		Id:      request.Id,
+		Content: request.Content,
 	})
 }
