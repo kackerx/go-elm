@@ -27,6 +27,8 @@ type ArticleService interface {
 
 	GetArticleList(vars.PageParams, string, string) ([]*model.Articles, int64, string, error)
 
+	GetArticleToday(ctx context.Context) (*model.Articles, bool, error)
+
 	AddArticle(request *AddArticleRequest) error
 
 	AddArticleContent(request *AddArticleContentRequest) error
@@ -34,6 +36,10 @@ type ArticleService interface {
 	SaveArticleImg(imgName, title string) error
 
 	UpdateArticleContent(ctx context.Context, request *AddArticleContentRequest) error
+
+	DeleteArticle(ctx context.Context, id string) error
+
+	GetImgList(vars.PageParams) ([]*model.Articles, int64, error)
 }
 
 type articleService struct {
@@ -65,7 +71,7 @@ func (s *articleService) AddArticleContent(req *AddArticleContentRequest) error 
 func (s *articleService) GetArticleList(params vars.PageParams, cate, year string) ([]*model.Articles, int64, string, error) {
 	offset := utils.GetPageOffset(params.PageSize, params.PageNum)
 
-	return s.articleRepository.List(offset, params.PageSize, cate, year)
+	return s.articleRepository.List(offset, params.PageSize, cate, year, params.IsAdmin)
 }
 
 func NewArticleService(service *Service, articleRepository repository.ArticleRepository) ArticleService {
@@ -95,4 +101,19 @@ func (s *articleService) UpdateArticleContent(ctx context.Context, request *AddA
 		Id:      request.Id,
 		Content: request.Content,
 	})
+}
+
+func (s *articleService) DeleteArticle(ctx context.Context, id string) error {
+	return s.articleRepository.Delete(ctx, id)
+}
+
+func (s *articleService) GetArticleToday(ctx context.Context) (*model.Articles, bool, error) {
+	return s.articleRepository.First(ctx)
+}
+
+func (s *articleService) GetImgList(params vars.PageParams) ([]*model.Articles, int64, error) {
+	offset := utils.GetPageOffset(params.PageSize, params.PageNum)
+
+	return s.articleRepository.ListImg(offset, params.PageSize)
+
 }

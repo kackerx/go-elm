@@ -15,20 +15,26 @@ import (
 type ArticleRepository interface {
 	FirstById(id string) (*model.ArticleContent, error)
 
-	List(offset, pageSize int, cate, year string) ([]*model.Articles, int64, string, error)
+	List(offset, pageSize int, cate, year string, isAdmin int) ([]*model.Articles, int64, string, error)
 
 	Create(article *model.Articles) error
 
 	CreateContent(article *model.ArticleContent) error
 
 	Update(ctx context.Context, content *model.ArticleContent) error
+
+	Delete(ctx context.Context, id string) error
+
+	First(ctx context.Context) (*model.Articles, bool, error)
+
+	ListImg(offset, pageSize int) ([]*model.Articles, int64, error)
 }
 
 type articleRepository struct {
 	*Repository
 }
 
-func (r *articleRepository) List(offset, pageSize int, cate, year string) (res []*model.Articles, total int64, yearStr string, err error) {
+func (r *articleRepository) List(offset, pageSize int, cate, year string, isAdmin int) (res []*model.Articles, total int64, yearStr string, err error) {
 	switch year {
 	case "2021":
 		cate = "8"
@@ -64,6 +70,13 @@ func (r *articleRepository) List(offset, pageSize int, cate, year string) (res [
 		Order("YEAR(STR_TO_DATE(diy_date, '%Y/%m/%d')) desc").
 		Find(&years)
 	yearStr = strings.Join(years, ",")
+
+	if isAdmin != 1 {
+		now := time.Now()
+		if now.Before(time.Date(now.Year(), now.Month(), now.Day(), 20, 11, 0, 0, now.Location())) {
+			offset += 1
+		}
+	}
 
 	if err = r.db.
 		Where("cid = ?", cate).
@@ -134,4 +147,52 @@ func (r *articleRepository) Update(ctx context.Context, content *model.ArticleCo
 	}
 
 	return nil
+}
+
+func (r *articleRepository) Delete(ctx context.Context, id string) error {
+	if err := r.db.Where("id = ?", id).Delete(&model.Articles{}).Error; err != nil {
+		return errors.Wrap(err, "删除文章内容失败")
+	}
+
+	return nil
+}
+
+func (r *articleRepository) First(ctx context.Context) (*model.Articles, bool, error) {
+	var today = time.Now()
+	var diyDate string
+	var isTrans bool
+	if today.Before(time.Date(today.Year(), today.Month(), today.Day(), 20, 5, 0, 0, today.Location())) {
+		diyDate = today.AddDate(0, 0, -1).Format("2006/1/02")
+	} else {
+		if today.Hour() == 20 && today.Minute() <= 9 {
+			isTrans = true
+		}
+		diyDate = today.Format("2006/1/02")
+	}
+	var article model.Articles
+	if err := r.db.Where("diy_date = ?", diyDate).First(&article).Error; err != nil {
+		// if errors.Is(err, gorm.ErrRecordNotFound) {
+		// 	return nil, isTrans, err
+		// }
+
+		return nil, isTrans, errors.Wrap(err, "查找文章失败")
+	}
+
+	return &article, isTrans, nil
+}
+
+func (r *articleRepository) ListImg(offset, pageSize int) (res []*model.Articles, total int64, err error) {
+	if err = r.db.
+		Where("img_url != ''").
+		// Offset(offset).Limit(pageSize).
+		Order("id desc").
+		Find(&res).
+		Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, total, nil
+		}
+		return nil, total, errors.Wrap(err, "查找图片列表失败")
+	}
+
+	return
 }

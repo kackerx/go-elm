@@ -9,7 +9,6 @@ import (
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 
 	"elm/pkg/log"
 )
@@ -29,7 +28,7 @@ func NewRepository(db *gorm.DB, logger *log.Logger) *Repository {
 
 func NewDB(conf *viper.Viper) *gorm.DB {
 	db, err := gorm.Open(mysql.Open(conf.GetString("data.mysql.user")), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+		// Logger: logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {
 		panic(err)

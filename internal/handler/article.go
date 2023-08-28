@@ -1,11 +1,14 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"path/filepath"
 
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 
 	"elm/internal/service"
 	"elm/pkg/helper/resp"
@@ -19,6 +22,7 @@ type ArticleHandler interface {
 	UpdateArticle(ctx *gin.Context)
 
 	GetArticleList(ctx *gin.Context)
+	GetArticleToday(ctx *gin.Context)
 
 	AddArticle(ctx *gin.Context)
 
@@ -27,6 +31,10 @@ type ArticleHandler interface {
 	UpdateArticleContent(ctx *gin.Context)
 
 	ImageUpload(ctx *gin.Context)
+
+	DeleteArticle(ctx *gin.Context)
+
+	GetImgList(ctx *gin.Context)
 }
 
 type articleHandler struct {
@@ -78,6 +86,8 @@ func (h *articleHandler) GetArticleList(ctx *gin.Context) {
 		return
 	}
 
+	url := ctx.Request.URL.Path
+	fmt.Println(url)
 	articles, total, year, err := h.articleService.GetArticleList(params, ctx.Query("cate"), ctx.Query("year"))
 	if err != nil {
 		resp.HandleError(ctx, http.StatusOK, 1, "获取记录失败", nil)
@@ -158,4 +168,51 @@ func (h *articleHandler) ImageUpload(ctx *gin.Context) {
 	}
 
 	resp.HandleSuccess(ctx, nil)
+}
+
+func (h *articleHandler) DeleteArticle(ctx *gin.Context) {
+	var params struct {
+		Id string `json:"id" binding:"required"`
+	}
+	if err := ctx.ShouldBindJSON(&params); err != nil {
+		resp.HandleError(ctx, http.StatusBadRequest, 1, err.Error(), nil)
+		return
+	}
+
+	err := h.articleService.DeleteArticle(ctx, params.Id)
+	if err != nil {
+		resp.HandleError(ctx, http.StatusOK, 1, err.Error(), nil)
+		return
+	}
+
+	resp.HandleSuccess(ctx, nil)
+}
+
+func (h *articleHandler) GetArticleToday(ctx *gin.Context) {
+	article, isTrans, err := h.articleService.GetArticleToday(ctx)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			resp.HandleError(ctx, http.StatusOK, 1, "当日未设置开奖", nil)
+			return
+		}
+		resp.HandleError(ctx, http.StatusOK, 1, err.Error(), nil)
+		return
+	}
+
+	data := map[string]any{
+		"data":    article,
+		"isTrans": isTrans,
+	}
+	resp.HandleSuccess(ctx, data)
+}
+
+func (h *articleHandler) GetImgList(ctx *gin.Context) {
+	var params vars.PageParams
+	articles, _, err := h.articleService.GetImgList(params)
+	if err != nil {
+		resp.HandleError(ctx, http.StatusOK, 1, "获取图片失败", nil)
+		return
+	}
+
+	resp.HandleSuccess(ctx, articles)
 }

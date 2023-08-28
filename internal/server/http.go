@@ -47,6 +47,8 @@ func NewServerHTTP(
 	{
 		articleRouter.GET("/articles/:id", articleHandler.GetArticleById)
 		articleRouter.GET("/articles", articleHandler.GetArticleList)
+		articleRouter.GET("/imgs", articleHandler.GetImgList)
+		articleRouter.GET("/articles/today", articleHandler.GetArticleToday)
 	}
 	articleAuthRouter := r.Group("/api").Use(middleware.StrictAuth(jwt, logger))
 	{
@@ -54,6 +56,7 @@ func NewServerHTTP(
 		articleAuthRouter.POST("/article_content", articleHandler.AddArticleContent)
 		articleAuthRouter.POST("/image/upload", articleHandler.ImageUpload)
 		articleAuthRouter.POST("/article_content/update", articleHandler.UpdateArticleContent)
+		articleAuthRouter.POST("/articles/delete", articleHandler.DeleteArticle)
 	}
 
 	// home_page rounter
